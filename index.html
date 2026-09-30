@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QuickCart — Groceries in 10 minutes</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6fbf4;--card:#fff;--ink:#12261a;--mute:#5d7365;--brand:#12a150;--brand2:#0b7a3b;--accent:#ffb020;--line:#e2ede4;--shadow:0 6px 24px rgba(18,38,26,.08);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a12;--card:#16261c;--ink:#e8f5ec;--mute:#93ad9b;--line:#23382a;--shadow:0 6px 24px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--bg:#0e1a12;--card:#16261c;--ink:#e8f5ec;--mute:#93ad9b;--line:#23382a;--shadow:0 6px 24px rgba(0,0,0,.4)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Sora',system-ui,sans-serif;overflow-x:hidden}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar-row{display:flex;align-items:center;gap:14px;padding:12px 0}
+.logo{font-weight:800;font-size:22px;color:var(--brand);cursor:pointer;white-space:nowrap}
+.logo span{color:var(--accent)}
+.search{flex:1;min-width:0;padding:11px 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);outline:none}
+.search:focus{border-color:var(--brand)}
+.ibtn{position:relative;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:10px 14px;font-weight:600;white-space:nowrap}
+.badge{position:absolute;top:-6px;right:-4px;background:var(--accent);color:#000;border-radius:999px;font-size:11px;padding:2px 6px;font-weight:800}
+.hero{position:relative;overflow:hidden;margin:18px 0;border-radius:28px;padding:48px 32px;background:linear-gradient(135deg,#0f8f47,#20c46a);color:#fff}
+.hero h1{font-size:clamp(28px,5vw,52px);line-height:1.05;max-width:560px;position:relative}
+.hero p{margin:14px 0 22px;max-width:440px;opacity:.92;position:relative}
+.hero .stats{display:flex;gap:22px;flex-wrap:wrap;position:relative}
+.hero .stats b{display:block;font-size:22px}
+.blob{position:absolute;border-radius:50%;filter:blur(2px);opacity:.25;background:#fff}
+.b1{width:260px;height:260px;right:-60px;top:-60px}.b2{width:140px;height:140px;right:180px;bottom:-40px;background:var(--accent)}
+.emojis{position:absolute;right:30px;bottom:14px;font-size:64px;letter-spacing:8px}
+.chips{display:flex;gap:10px;overflow-x:auto;padding:6px 0 14px;scrollbar-width:none}
+.chip{padding:9px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);white-space:nowrap;font-weight:600}
+.chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0 14px}
+.row select{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;padding-bottom:40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;box-shadow:var(--shadow);position:relative;transition:transform .2s}
+.card:hover{transform:translateY(-4px)}
+.pic{font-size:60px;text-align:center;padding:14px 0;background:var(--bg);border-radius:14px}
+.card h3{font-size:15px;margin:10px 0 2px}
+.card small{color:var(--mute)}
+.price{display:flex;align-items:baseline;gap:6px;margin:8px 0}
+.price b{font-size:17px}.price s{color:var(--mute);font-size:12px}
+.off{position:absolute;top:10px;left:10px;background:var(--accent);color:#000;font-size:11px;font-weight:800;padding:3px 8px;border-radius:8px}
+.add{width:100%;padding:9px;border-radius:12px;background:transparent;border:1.5px solid var(--brand);color:var(--brand);font-weight:800}
+.add:hover{background:var(--brand);color:#fff}
+.step{display:flex;align-items:center;justify-content:space-between;background:var(--brand);color:#fff;border-radius:12px;padding:4px}
+.step button{background:transparent;color:#fff;width:34px;height:32px;font-size:20px;font-weight:800}
+.empty{grid-column:1/-1;text-align:center;padding:60px;color:var(--mute)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--bg);z-index:50;display:flex;flex-direction:column;padding:18px;padding-top:calc(18px + env(safe-area-inset-top,0px));padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+.drawer .list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.li{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px}
+.li .e{font-size:30px}.li .m{flex:1;min-width:0}.li .step{width:96px}
+.bill div{display:flex;justify-content:space-between;padding:4px 0;color:var(--mute)}
+.bill .t{color:var(--ink);font-weight:800;font-size:18px;border-top:1px dashed var(--line);margin-top:6px;padding-top:10px}
+.cta{width:100%;padding:14px;border-radius:14px;background:var(--brand);color:#fff;font-weight:800;margin-top:10px}
+.cta:disabled{opacity:.45;cursor:not-allowed}
+.coupon{display:flex;gap:8px;margin:8px 0}
+.coupon input{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);text-transform:uppercase}
+.coupon button{padding:0 14px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:700}
+.msg{font-size:12px;color:var(--brand)}.msg.err{color:#d33}
+.two{display:grid;grid-template-columns:1.3fr 1fr;gap:22px;padding:24px 0 50px}
+@media(max-width:820px){.two{grid-template-columns:1fr}.hero{padding:32px 22px}.emojis{display:none}.bar-row{flex-wrap:wrap}.logo{order:1}.search{order:3;flex-basis:100%}.ibtn{order:2}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow)}
+.panel h2{margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field input,.field select{padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+.field .err{color:#d33;font-size:12px}
+.pay{display:flex;gap:8px;flex-wrap:wrap}
+.pay label{flex:1;min-width:110px;border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-weight:600}
+.pay input{display:none}.pay label.on{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 12%,transparent)}
+.track{max-width:640px;margin:30px auto 60px;text-align:center}
+.rider{font-size:70px}
+.prog{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:22px 0}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--accent))}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px;color:var(--mute)}
+.steps .done{color:var(--brand);font-weight:800}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:999px;z-index:60;font-weight:600;font-size:14px}
+footer{text-align:center;color:var(--mute);padding:30px 0 40px;font-size:13px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+const {useState,useEffect,useLayoutEffect,useRef,useMemo}=React, h=React.createElement;
+gsap.registerPlugin(ScrollTrigger);
+const RAW=`Bananas|🍌|49|1 dozen|Fruits|60
+Apples|🍎|159|1 kg|Fruits|180
+Mangoes|🥭|199|1 kg|Fruits|240
+Grapes|🍇|89|500 g|Fruits|110
+Tomatoes|🍅|35|500 g|Veggies|45
+Carrots|🥕|42|500 g|Veggies|50
+Broccoli|🥦|69|1 pc|Veggies|85
+Potatoes|🥔|38|1 kg|Veggies|48
+Corn|🌽|30|2 pcs|Veggies|40
+Milk|🥛|33|500 ml|Dairy|35
+Cheese Slices|🧀|120|200 g|Dairy|140
+Eggs|🥚|84|12 pcs|Dairy|96
+Butter|🧈|58|100 g|Dairy|62
+Bread|🍞|45|400 g|Bakery|50
+Croissant|🥐|60|2 pcs|Bakery|75
+Donuts|🍩|99|4 pcs|Bakery|120
+Chips|🥔|20|60 g|Snacks|25
+Popcorn|🍿|45|100 g|Snacks|55
+Chocolate|🍫|80|100 g|Snacks|95
+Cookies|🍪|35|150 g|Snacks|40
+Orange Juice|🍊|95|1 L|Drinks|110
+Cola|🥤|40|750 ml|Drinks|45
+Green Tea|🍵|150|25 bags|Drinks|180
+Coffee|☕|220|200 g|Drinks|260
+Oranges|🍊|80|1 kg|Fruits|84
+Lemons|🍋|30|250 g|Fruits|32
+Watermelon|🍉|60|1 pc|Fruits|67
+Pineapple|🍍|75|1 pc|Fruits|86
+Kiwi|🥝|99|3 pcs|Fruits|119
+Strawberries|🍓|120|250 g|Fruits|126
+Cherries|🍒|349|250 g|Fruits|377
+Peaches|🍑|140|500 g|Fruits|157
+Pears|🍐|130|500 g|Fruits|150
+Coconut|🥥|40|1 pc|Fruits|48
+Blueberries|🫐|199|125 g|Fruits|209
+Muskmelon|🍈|55|1 pc|Fruits|59
+Green Apples|🍏|170|1 kg|Fruits|190
+Papaya|🍈|65|1 pc|Fruits|75
+Pomegranate|🍎|150|500 g|Fruits|180
+Guava|🍐|60|500 g|Fruits|63
+Dates|🌴|180|250 g|Fruits|194
+Onions|🧅|40|1 kg|Veggies|45
+Garlic|🧄|30|100 g|Veggies|34
+Cucumber|🥒|30|500 g|Veggies|36
+Capsicum|🫑|55|500 g|Veggies|58
+Green Chilli|🌶️|15|100 g|Veggies|16
+Spinach|🥬|25|250 g|Veggies|28
+Cabbage|🥬|32|1 pc|Veggies|37
+Cauliflower|🥦|45|1 pc|Veggies|54
+Eggplant|🍆|40|500 g|Veggies|42
+Green Peas|🫛|60|250 g|Veggies|65
+Mushrooms|🍄|55|200 g|Veggies|62
+Ginger|🫚|25|100 g|Veggies|29
+Coriander|🌿|15|1 bunch|Veggies|18
+Mint|🌿|12|1 bunch|Veggies|13
+Beetroot|🥕|30|500 g|Veggies|32
+Radish|🥕|25|500 g|Veggies|28
+Pumpkin|🎃|35|500 g|Veggies|40
+Sweet Potato|🍠|50|500 g|Veggies|60
+Lady Finger|🥒|45|500 g|Veggies|47
+Bottle Gourd|🥒|30|1 pc|Veggies|32
+Ridge Gourd|🥒|38|500 g|Veggies|43
+Lettuce|🥬|48|1 pc|Veggies|55
+Cherry Tomato|🍅|70|250 g|Veggies|84
+Avocado|🥑|120|2 pcs|Veggies|126
+Baby Corn|🌽|40|200 g|Veggies|43
+Curd|🥣|35|400 g|Dairy|39
+Paneer|🧀|95|200 g|Dairy|109
+Ghee|🧈|340|500 ml|Dairy|408
+Toned Milk|🥛|68|1 L|Dairy|71
+Buttermilk|🥛|15|200 ml|Dairy|16
+Fresh Cream|🥛|60|200 ml|Dairy|67
+Greek Yogurt|🥣|55|100 g|Dairy|63
+Mozzarella|🧀|130|200 g|Dairy|156
+Cheese Spread|🧀|85|180 g|Dairy|89
+Flavoured Milk|🥛|30|200 ml|Dairy|32
+Condensed Milk|🥛|110|400 g|Dairy|123
+Lassi|🥛|25|200 ml|Dairy|29
+Cheddar Block|🧀|240|400 g|Dairy|288
+Soy Milk|🥛|85|1 L|Dairy|89
+Brown Bread|🍞|55|400 g|Bakery|59
+Multigrain Bread|🍞|60|400 g|Bakery|67
+Pav|🥖|30|6 pcs|Bakery|34
+Burger Buns|🍔|40|4 pcs|Bakery|48
+Baguette|🥖|70|1 pc|Bakery|74
+Bagels|🥯|85|3 pcs|Bakery|92
+Muffins|🧁|80|2 pcs|Bakery|90
+Cupcakes|🧁|90|4 pcs|Bakery|104
+Pizza Base|🍕|60|2 pcs|Bakery|72
+Rusk|🍪|45|200 g|Bakery|47
+Cake Slice|🍰|75|1 pc|Bakery|81
+Waffles|🧇|99|4 pcs|Bakery|111
+Pancake Mix|🥞|130|200 g|Bakery|150
+Nachos|🌮|60|150 g|Snacks|72
+Namkeen Mix|🥨|55|200 g|Snacks|58
+Bhujia|🥨|50|200 g|Snacks|54
+Pretzels|🥨|70|100 g|Snacks|78
+Peanuts|🥜|45|200 g|Snacks|52
+Almonds|🌰|220|250 g|Snacks|264
+Cashews|🌰|260|250 g|Snacks|273
+Raisins|🍇|85|200 g|Snacks|92
+Walnuts|🌰|280|200 g|Snacks|314
+Pistachios|🥜|320|200 g|Snacks|368
+Biscuits|🍪|30|200 g|Snacks|36
+Cream Biscuits|🍪|35|150 g|Snacks|37
+Wafers|🍫|25|60 g|Snacks|27
+Candy|🍬|10|10 pcs|Snacks|11
+Lollipops|🍭|20|5 pcs|Snacks|23
+Ice Cream Bar|🍦|30|1 pc|Snacks|36
+Energy Bar|🍫|60|40 g|Snacks|63
+Makhana|🍿|140|100 g|Snacks|151
+Dark Chocolate|🍫|130|100 g|Snacks|146
+Gummies|🍬|55|100 g|Snacks|63
+Rice Cakes|🍘|75|100 g|Snacks|90
+Trail Mix|🥜|180|200 g|Snacks|189
+Mango Juice|🥭|85|1 L|Drinks|92
+Apple Juice|🍎|90|1 L|Drinks|101
+Coconut Water|🥥|45|200 ml|Drinks|52
+Lemonade|🍋|30|250 ml|Drinks|36
+Energy Drink|⚡|125|250 ml|Drinks|131
+Soda Water|🫧|20|750 ml|Drinks|22
+Mineral Water|💧|20|1 L|Drinks|22
+Iced Tea|🧋|40|300 ml|Drinks|46
+Cold Coffee|☕|55|200 ml|Drinks|66
+Black Tea|🍵|140|250 g|Drinks|147
+Masala Chai|🫖|125|250 g|Drinks|135
+Instant Coffee|☕|180|100 g|Drinks|202
+Hot Chocolate|🍫|210|200 g|Drinks|242
+Sparkling Water|💧|60|500 ml|Drinks|72
+Sports Drink|🥤|30|500 ml|Drinks|32
+Tomato Juice|🍅|70|1 L|Drinks|76
+Rose Syrup|🌹|120|750 ml|Drinks|134
+Protein Shake|🥤|150|250 ml|Drinks|172
+Basmati Rice|🍚|140|1 kg|Staples|168
+Sona Masoori Rice|🍚|75|1 kg|Staples|79
+Wheat Flour|🌾|55|1 kg|Staples|59
+Besan|🌾|70|500 g|Staples|78
+Maida|🌾|38|500 g|Staples|44
+Semolina|🌾|42|500 g|Staples|50
+Poha|🍚|45|500 g|Staples|47
+Oats|🥣|110|500 g|Staples|119
+Cornflakes|🥣|180|475 g|Staples|202
+Muesli|🥣|250|500 g|Staples|288
+Toor Dal|🫘|165|1 kg|Staples|198
+Moong Dal|🫘|140|1 kg|Staples|147
+Chana Dal|🫘|110|1 kg|Staples|119
+Masoor Dal|🫘|105|1 kg|Staples|118
+Rajma|🫘|130|500 g|Staples|150
+Chickpeas|🫘|95|500 g|Staples|114
+Sugar|🧂|48|1 kg|Staples|50
+Salt|🧂|25|1 kg|Staples|27
+Jaggery|🟤|60|500 g|Staples|67
+Sunflower Oil|🫒|165|1 L|Staples|190
+Olive Oil|🫒|540|500 ml|Staples|648
+Mustard Oil|🫒|190|1 L|Staples|200
+Turmeric Powder|🟡|45|100 g|Staples|49
+Red Chilli Powder|🌶️|60|100 g|Staples|67
+Coriander Powder|🌿|40|100 g|Staples|46
+Garam Masala|🌶️|75|50 g|Staples|90
+Cumin Seeds|🌿|55|100 g|Staples|58
+Black Pepper|⚫|95|50 g|Staples|103
+Honey|🍯|190|500 g|Staples|213
+Peanut Butter|🥜|180|340 g|Staples|207
+Fruit Jam|🍓|110|350 g|Staples|132
+Tomato Ketchup|🍅|95|500 g|Staples|100
+Instant Noodles|🍜|14|70 g|Staples|15
+Pasta|🍝|85|500 g|Staples|95
+Pasta Sauce|🍝|130|300 g|Staples|150
+Vinegar|🍾|45|500 ml|Staples|54
+Soy Sauce|🍶|60|200 ml|Staples|63
+Chicken Breast|🍗|260|500 g|Meat & Fish|281
+Chicken Curry Cut|🍗|220|500 g|Meat & Fish|246
+Mutton|🍖|780|500 g|Meat & Fish|897
+Rohu Fish|🐟|240|500 g|Meat & Fish|288
+Prawns|🦐|420|250 g|Meat & Fish|441
+Pomfret|🐟|450|500 g|Meat & Fish|486
+Salmon Fillet|🐟|699|250 g|Meat & Fish|783
+Crab|🦀|380|500 g|Meat & Fish|437
+Bacon|🥓|220|150 g|Meat & Fish|264
+Sausages|🌭|190|250 g|Meat & Fish|200
+Chicken Keema|🍗|280|500 g|Meat & Fish|302
+Brown Eggs|🥚|110|12 pcs|Meat & Fish|123
+Frozen Peas|🫛|90|500 g|Frozen|104
+Frozen Corn|🌽|85|500 g|Frozen|102
+French Fries|🍟|140|420 g|Frozen|147
+Chicken Nuggets|🍗|230|400 g|Frozen|248
+Veg Momos|🥟|120|10 pcs|Frozen|134
+Frozen Paratha|🫓|95|5 pcs|Frozen|109
+Ice Cream Tub|🍨|199|500 ml|Frozen|239
+Frozen Pizza|🍕|249|1 pc|Frozen|261
+Veg Burger Patty|🍔|150|360 g|Frozen|162
+Frozen Berries|🫐|260|300 g|Frozen|291
+Dishwash Liquid|🧽|110|500 ml|Household|126
+Detergent Powder|🧺|180|1 kg|Household|216
+Floor Cleaner|🧹|175|1 L|Household|184
+Toilet Cleaner|🚽|95|500 ml|Household|103
+Garbage Bags|🗑️|85|30 pcs|Household|95
+Tissue Rolls|🧻|140|4 rolls|Household|161
+Aluminium Foil|📦|130|9 m|Household|156
+Cling Film|📦|110|30 m|Household|116
+Sponge Scrub|🧽|40|3 pcs|Household|43
+Air Freshener|🌸|199|250 ml|Household|223
+Mosquito Repellent|🦟|85|45 ml|Household|98
+LED Bulb|💡|99|1 pc|Household|119
+Batteries|🔋|110|4 pcs|Household|116
+Candles|🕯️|50|6 pcs|Household|54
+Shampoo|🧴|190|340 ml|Personal Care|213
+Conditioner|🧴|210|180 ml|Personal Care|242
+Body Wash|🧼|220|250 ml|Personal Care|264
+Bath Soap|🧼|120|4 pcs|Personal Care|126
+Toothpaste|🪥|95|150 g|Personal Care|103
+Toothbrush|🪥|55|2 pcs|Personal Care|62
+Face Wash|🧴|175|100 ml|Personal Care|201
+Moisturiser|🧴|230|200 ml|Personal Care|276
+Sunscreen|☀️|349|50 g|Personal Care|366
+Deodorant|🧴|199|150 ml|Personal Care|215
+Hand Wash|🧼|89|250 ml|Personal Care|100
+Sanitiser|🧴|75|100 ml|Personal Care|86
+Razor|🪒|120|1 pc|Personal Care|144
+Sanitary Pads|🌸|55|10 pcs|Personal Care|58
+Cotton Buds|🧻|40|100 pcs|Personal Care|43
+Hair Oil|💆|130|200 ml|Personal Care|146
+Baby Diapers|👶|599|30 pcs|Baby & Pets|689
+Baby Wipes|👶|150|72 pcs|Baby & Pets|180
+Dog Food|🐶|350|1 kg|Baby & Pets|368
+Cat Food|🐱|260|400 g|Baby & Pets|281`;
+const P=RAW.split("\n").map((l,i)=>{const[n,e,p,u,c,o]=l.split("|");return{id:i+1,n,e,p:+p,u,c,o:+o}});
+const CATS=["All",...new Set(P.map(p=>p.c))];
+const inr=n=>"₹"+n.toLocaleString("en-IN");
+let AC,muted=false;
+function chime(){if(muted)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();[659.25,783.99,1046.5,1318.5].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+i*.08;o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.16,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.55);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.6)})}catch(e){}}
+function useLS(k,d){const[s,set]=useState(()=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}});useEffect(()=>{try{localStorage.setItem(k,JSON.stringify(s))}catch(e){}},[s]);return[s,set]}
+
+function Stepper({q,add,dec}){return h("div",{className:"step"},h("button",{onClick:dec,"aria-label":"Remove one"},"−"),h("b",null,q),h("button",{onClick:add,"aria-label":"Add one"},"+"))}
+
+function Card({p,q,add,dec}){
+  const off=Math.round((1-p.p/p.o)*100);
+  return h("div",{className:"card"},
+    off>0&&h("span",{className:"off"},off+"% OFF"),
+    h("div",{className:"pic"},p.e),h("h3",null,p.n),h("small",null,p.u),
+    h("div",{className:"price"},h("b",null,inr(p.p)),h("s",null,inr(p.o))),
+    q?h(Stepper,{q,add,dec}):h("button",{className:"add",onClick:add},"ADD"));
+}
+
+function Drawer({items,bill,coupon,setCoupon,add,dec,onClose,onCheckout}){
+  const ref=useRef(),[code,setCode]=useState(coupon.code||""),[msg,setMsg]=useState("");
+  useLayoutEffect(()=>{gsap.from(ref.current,{xPercent:100,duration:.45,ease:"power3.out"});gsap.from(".li",{x:30,opacity:0,stagger:.05,delay:.2})},[]);
+  const close=()=>{gsap.to(ref.current,{xPercent:100,duration:.3,ease:"power2.in",onComplete:onClose})};
+  const apply=()=>{const c=code.trim().toUpperCase();
+    if(c==="QUICK10")setCoupon({code:c}),setMsg("10% off applied!");
+    else if(c==="FIRST50"){if(bill.sub>=299)setCoupon({code:c}),setMsg("₹50 off applied!");else setCoupon({}),setMsg("FIRST50 needs a ₹299+ cart")}
+    else setCoupon({}),setMsg("Invalid code");};
+  return h(React.Fragment,null,
+    h("div",{className:"overlay",onClick:close}),
+    h("aside",{className:"drawer",ref},
+      h("div",{className:"row"},h("h2",null,"Your cart 🛒"),h("button",{className:"ibtn",onClick:close},"✕")),
+      items.length?h("div",{className:"list"},items.map(i=>h("div",{className:"li",key:i.id},h("span",{className:"e"},i.e),h("div",{className:"m"},h("b",null,i.n),h("div",null,h("small",null,inr(i.p)+" · "+i.u))),h(Stepper,{q:i.q,add:()=>add(i.id),dec:()=>dec(i.id)})))):
+        h("div",{className:"list empty"},"🧺",h("p",null,"Your cart is empty. Add something fresh!")),
+      items.length>0&&h(React.Fragment,null,
+        h("div",{className:"coupon"},h("input",{value:code,onChange:e=>setCode(e.target.value),placeholder:"QUICK10 / FIRST50"}),h("button",{onClick:apply},"Apply")),
+        msg&&h("div",{className:"msg"+(/Invalid|needs/.test(msg)?" err":"")},msg),
+        h(Bill,{bill}),
+        h("button",{className:"cta",onClick:()=>{gsap.to(ref.current,{xPercent:100,duration:.3,onComplete:()=>{onClose();onCheckout()}})}},"Proceed to checkout →"))));
+}
+
+function Bill({bill}){return h("div",{className:"bill"},
+  h("div",null,h("span",null,"Items total"),h("span",null,inr(bill.sub))),
+  bill.disc>0&&h("div",null,h("span",null,"Coupon discount"),h("span",null,"−"+inr(bill.disc))),
+  h("div",null,h("span",null,"Delivery"),h("span",null,bill.fee?inr(bill.fee):"FREE")),
+  bill.sub>0&&bill.sub<499&&h("div",{className:"msg"},"Add "+inr(499-bill.sub)+" more for free delivery"),
+  h("div",{className:"t"},h("span",null,"To pay"),h("span",null,inr(bill.total))))}
+
+function Home({q,cat,setCat,sort,setSort,cart,add,dec}){
+  const list=useMemo(()=>{let l=P.filter(p=>(cat==="All"||p.c===cat)&&p.n.toLowerCase().includes(q.toLowerCase()));
+    if(sort==="low")l=[...l].sort((a,b)=>a.p-b.p);if(sort==="high")l=[...l].sort((a,b)=>b.p-a.p);
+    if(sort==="off")l=[...l].sort((a,b)=>b.o/b.p-a.o/a.p);return l},[q,cat,sort]);
+  useEffect(()=>{
+    gsap.set(".card",{opacity:0,y:40});
+    const st=ScrollTrigger.batch(".card",{start:"top 94%",onEnter:b=>gsap.to(b,{opacity:1,y:0,stagger:.06,duration:.55,ease:"power2.out",overwrite:true})});
+    ScrollTrigger.refresh();return()=>st.forEach(s=>s.kill())},[list]);
+  useEffect(()=>{
+    const a=gsap.to(".b1",{yPercent:40,scrollTrigger:{trigger:".hero",start:"top top",end:"bottom top",scrub:true}});
+    const b=gsap.to(".emojis",{yPercent:-30,xPercent:-6,scrollTrigger:{trigger:".hero",start:"top top",end:"bottom top",scrub:true}});
+    gsap.from(".hero h1,.hero p,.stats>div",{y:34,opacity:0,stagger:.12,duration:.8,ease:"power3.out"});
+    return()=>{a.scrollTrigger.kill();b.scrollTrigger.kill()}},[]);
+  return h("div",{className:"wrap"},
+    h("section",{className:"hero"},h("i",{className:"blob b1"}),h("i",{className:"blob b2"}),
+      h("h1",null,"Groceries delivered in 10 minutes."),
+      h("p",null,"Fresh fruits, veggies, dairy and daily essentials from your nearest dark store. Use code QUICK10 for 10% off."),
+      h("div",{className:"stats"},[["10 min","avg delivery"],["2,000+","products"],["₹0","fee over ₹499"]].map(s=>h("div",{key:s[1]},h("b",null,s[0]),s[1]))),
+      h("div",{className:"emojis"},"🥑🍓🥛")),
+    h("div",{className:"chips"},CATS.map(c=>h("button",{key:c,className:"chip"+(c===cat?" on":""),onClick:()=>setCat(c)},c))),
+    h("div",{className:"row"},h("h2",null,cat==="All"?"Popular right now":cat),
+      h("select",{value:sort,onChange:e=>setSort(e.target.value),"aria-label":"Sort"},h("option",{value:"rec"},"Recommended"),h("option",{value:"low"},"Price: low to high"),h("option",{value:"high"},"Price: high to low"),h("option",{value:"off"},"Biggest discount"))),
+    h("div",{className:"grid"},list.length?list.map(p=>h(Card,{key:p.id,p,q:cart[p.id]||0,add:()=>add(p.id),dec:()=>dec(p.id)})):h("div",{className:"empty"},"😕 No items match “"+q+"”")));
+}
+
+function Checkout({items,bill,onBack,onPlace}){
+  const[f,setF]=useState({name:"",phone:"",addr:"",slot:"ASAP (10 min)",pay:"UPI"}),[er,setEr]=useState({});
+  const set=k=>e=>setF({...f,[k]:e.target.value});
+  const submit=()=>{const e={};if(f.name.trim().length<2)e.name="Enter your name";if(!/^[6-9]\d{9}$/.test(f.phone))e.phone="Enter a valid 10-digit mobile number";if(f.addr.trim().length<10)e.addr="Enter a full delivery address";
+    setEr(e);if(!Object.keys(e).length)onPlace(f);else gsap.fromTo(".panel",{x:-8},{x:0,duration:.5,ease:"elastic.out(1,.3)"})};
+  useEffect(()=>{gsap.from(".panel",{y:30,opacity:0,stagger:.15,duration:.6,ease:"power3.out"})},[]);
+  const fld=(k,l,ph,t)=>h("div",{className:"field"},h("label",null,l),h("input",{value:f[k],onChange:set(k),placeholder:ph,type:t||"text"}),er[k]&&h("span",{className:"err"},er[k]));
+  return h("div",{className:"wrap"},h("div",{className:"two"},
+    h("div",{className:"panel"},h("h2",null,"Delivery details"),
+      fld("name","Full name","Shaurya"),fld("phone","Mobile number","9876543210","tel"),fld("addr","Address","Flat, building, street, area, Mumbai"),
+      h("div",{className:"field"},h("label",null,"Delivery slot"),h("select",{value:f.slot,onChange:set("slot")},["ASAP (10 min)","Within 1 hour","6 PM – 8 PM","8 PM – 10 PM"].map(s=>h("option",{key:s},s)))),
+      h("label",null,"Payment"),
+      h("div",{className:"pay"},["UPI","Card","Cash on delivery"].map(p=>h("label",{key:p,className:f.pay===p?"on":""},h("input",{type:"radio",name:"pay",checked:f.pay===p,onChange:()=>setF({...f,pay:p})}),p))),
+      h("button",{className:"cta",disabled:!items.length,onClick:submit},"Place order · "+inr(bill.total)),
+      h("button",{className:"chip",style:{marginTop:10},onClick:onBack},"← Keep shopping")),
+    h("div",{className:"panel"},h("h2",null,"Order summary"),
+      items.map(i=>h("div",{key:i.id,className:"li",style:{marginBottom:8}},h("span",{className:"e"},i.e),h("div",{className:"m"},h("b",null,i.n),h("div",null,h("small",null,i.q+" × "+inr(i.p)))),h("b",null,inr(i.q*i.p)))),
+      h(Bill,{bill}))));
+}
+
+function Track({order,onHome}){
+  const S=["Order placed","Packing","Out for delivery","Delivered"],[s,setS]=useState(0);
+  useEffect(()=>{const t=setInterval(()=>setS(x=>Math.min(x+1,3)),3500);return()=>clearInterval(t)},[]);
+  useEffect(()=>{gsap.to(".prog i",{width:((s+1)/4*100)+"%",duration:.9,ease:"power2.out"});
+    gsap.fromTo(".rider",{y:0},{y:-14,repeat:s<3?-1:0,yoyo:true,duration:.5,ease:"sine.inOut"})},[s]);
+  useEffect(()=>{gsap.from(".track>*",{y:24,opacity:0,stagger:.1,duration:.6})},[]);
+  const eta=[10,7,4,0][s];
+  return h("div",{className:"wrap"},h("div",{className:"track panel"},
+    h("div",{className:"rider"},s===3?"🎉":s===2?"🛵":s===1?"📦":"✅"),
+    h("h2",null,s===3?"Delivered! Enjoy your groceries":"Arriving in "+eta+" min"),
+    h("p",{style:{color:"var(--mute)"}},"Order #"+order.id+" · "+order.pay+" · "+inr(order.total)),
+    h("div",{className:"prog"},h("i")),
+    h("div",{className:"steps"},S.map((x,i)=>h("div",{key:x,className:i<=s?"done":""},(i<=s?"● ":"○ ")+x))),
+    h("p",{style:{margin:"20px 0 6px",fontSize:13,color:"var(--mute)"}},"Delivering to: "+order.addr),
+    h("button",{className:"cta",onClick:onHome},"Back to store")));
+}
+
+function App(){
+  const[view,setView]=useState("home"),[cart,setCart]=useLS("qc_cart",{}),[coupon,setCoupon]=useState({}),
+    [q,setQ]=useState(""),[cat,setCat]=useState("All"),[sort,setSort]=useState("rec"),[open,setOpen]=useState(false),
+    [order,setOrder]=useState(null),[toast,setToast]=useState(""),[mute,setMute]=useState(false),[,tick]=useState(0),[dark,setDark]=useState(()=>matchMedia("(prefers-color-scheme: dark)").matches);
+  const main=useRef();
+  useEffect(()=>{document.documentElement.dataset.theme=dark?"dark":"light"},[dark]);
+  const items=Object.keys(cart).map(id=>({...P.find(p=>p.id==id),q:cart[id]})).filter(i=>i.id);
+  const count=items.reduce((a,i)=>a+i.q,0),sub=items.reduce((a,i)=>a+i.q*i.p,0);
+  const disc=coupon.code==="QUICK10"?Math.round(sub*.1):coupon.code==="FIRST50"&&sub>=299?50:0;
+  const fee=sub===0||sub>=499?0:30,bill={sub,disc,fee,total:Math.max(0,sub-disc+fee)};
+  const flash=m=>{setToast(m);clearTimeout(flash.t);flash.t=setTimeout(()=>setToast(""),1800)};
+  const add=id=>{chime();setCart(c=>({...c,[id]:(c[id]||0)+1}));flash("Added "+P.find(p=>p.id===id).n)};
+  const dec=id=>setCart(c=>{const n={...c};n[id]>1?n[id]--:delete n[id];return n});
+  useEffect(()=>{gsap.fromTo(".badge",{scale:1.7},{scale:1,duration:.4,ease:"back.out(3)"})},[count]);
+  useLayoutEffect(()=>{gsap.fromTo(main.current,{opacity:0,y:26},{opacity:1,y:0,duration:.5,ease:"power3.out"})},[view]);
+  const go=v=>gsap.to(main.current,{opacity:0,y:-18,duration:.25,ease:"power2.in",onComplete:()=>{setView(v);window.scrollTo(0,0)}});
+  const place=async f=>{let id="QC"+Math.floor(10000+Math.random()*90000),total=bill.total;
+    try{const r=await fetch("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...f,items:cart,coupon:coupon.code||""})});if(r.ok){const d=await r.json();id=d.code;total=d.total}}catch(e){}
+    setOrder({...f,id,total});setCart({});setCoupon({});go("track")};
+  useEffect(()=>{fetch("/api/products").then(r=>r.ok?r.json():Promise.reject()).then(rows=>{if(rows.length){P.splice(0,P.length,...rows);tick(x=>x+1)}}).catch(()=>{})},[]);
+  return h(React.Fragment,null,
+    h("header",null,h("div",{className:"wrap bar-row"},
+      h("div",{className:"logo",onClick:()=>go("home")},"Quick",h("span",null,"Cart")),
+      h("input",{className:"search",placeholder:"Search “milk”, “bananas”…",value:q,onChange:e=>{setQ(e.target.value);if(view!=="home")go("home")},"aria-label":"Search"}),
+      h("button",{className:"ibtn",onClick:()=>{muted=!mute;setMute(!mute);if(mute)chime()},"aria-label":"Toggle sound"},mute?"🔕":"🔔"),
+      h("button",{className:"ibtn",onClick:()=>setDark(!dark),"aria-label":"Toggle theme"},dark?"☀️":"🌙"),
+      h("button",{className:"ibtn",onClick:()=>setOpen(true)},"🛒 Cart",count>0&&h("span",{className:"badge"},count)))),
+    h("main",{ref:main},
+      view==="home"&&h(Home,{q,cat,setCat,sort,setSort,cart,add,dec}),
+      view==="checkout"&&h(Checkout,{items,bill,onBack:()=>go("home"),onPlace:place}),
+      view==="track"&&order&&h(Track,{order,onHome:()=>go("home")})),
+    h("footer",null,"QuickCart · UI demo built with React & GSAP"),
+    open&&h(Drawer,{items,bill,coupon,setCoupon,add,dec,onClose:()=>setOpen(false),onCheckout:()=>go("checkout")}),
+    toast&&h("div",{className:"toast"},toast));
+}
+ReactDOM.createRoot(document.getElementById("root")).render(h(App));
+</script>
+</body>
+</html>
